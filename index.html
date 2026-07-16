@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Golden Sensor - Hệ thống phát hiện tai nạn xe máy AI</title>
+  <style>
+    /* RESET & BASE STYLES */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    body { background: #0b0d19; color: #e2e8f0; line-height: 1.6; overflow-x: hidden; }
+    a { color: inherit; text-decoration: none; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    /* NAVIGATION */
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(11, 13, 25, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid #1e293b; }
+    nav .container { display: flex; align-items: center; justify-content: space-between; height: 70px; }
+    .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 22px; color: #fff; }
+    .logo span { color: #f59e0b; }
+    .nav-links { display: flex; gap: 32px; }
+    .nav-links a { font-size: 14px; font-weight: 500; color: #94a3b8; transition: color 0.2s ease; }
+    .nav-links a:hover { color: #f59e0b; }
+    
+    /* BUTTONS */
+    .btn { background: linear-gradient(135deg, #f59e0b, #d97706); color: #0f172a; border: none; padding: 12px 24px; border-radius: 9999px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.4); }
+    .btn-outline { background: transparent; border: 1px solid #334155; color: #f1f5f9; }
+    .btn-outline:hover { background: #1e293b; border-color: #475569; transform: translateY(-2px); }
+    .btn-accent { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+    .btn-accent:hover { box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4); }
+
+    /* HERO SECTION */
+    .hero { padding: 100px 0 80px; text-align: center; background: radial-gradient(circle at top, rgba(245, 158, 11, 0.08) 0%, transparent 60%); }
+    .badge { display: inline-flex; align-items: center; gap: 6px; background: #1e293b; border: 1px solid #334155; color: #f59e0b; padding: 6px 16px; border-radius: 9999px; font-size: 13px; font-weight: 600; margin-bottom: 24px; }
+    .hero h1 { font-size: 56px; font-weight: 800; line-height: 1.15; margin-bottom: 24px; color: #fff; letter-spacing: -0.02em; }
+    .hero h1 span { background: linear-gradient(135deg, #f59e0b, #ef4444); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { font-size: 20px; color: #94a3b8; max-width: 720px; margin: 0 auto 40px; }
+    .hero-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+    /* STATS GRID */
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 80px; }
+    .stat-card { background: #151b30; border: 1px solid #222d4a; border-radius: 16px; padding: 28px 20px; text-align: center; position: relative; overflow: hidden; }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #f59e0b, #ef4444); opacity: 0; transition: opacity 0.3s; }
+    .stat-card:hover::before { opacity: 1; }
+    .stat-card .num { font-size: 38px; font-weight: 800; color: #f59e0b; margin-bottom: 4px; }
+    .stat-card .lbl { color: #64748b; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* STANDARD SECTIONS */
+    section { padding: 100px 0; border-bottom: 1px solid #121829; }
+    .sec-header { text-align: center; max-width: 700px; margin: 0 auto 60px; }
+    .sec-title { font-size: 40px; font-weight: 800; color: #fff; margin-bottom: 16px; letter-spacing: -0.02em; }
+    .sec-sub { font-size: 18px; color: #64748b; }
+
+    /* CORE FEATURES Grid */
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+    .feature-card { background: #151b30; border: 1px solid #222d4a; border-radius: 20px; padding: 36px; transition: all 0.3s ease; }
+    .feature-card:hover { transform: translateY(-8px); border-color: rgba(245, 158, 11, 0.4); box-shadow: 0 20px 40px -15px rgba(0,0,0,0.5); }
+    .feature-card .ico { width: 56px; height: 56px; background: rgba(245, 158, 11, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 24px; color: #f59e0b; }
+    .feature-card h3 { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 12px; }
+    .feature-card p { color: #94a3b8; font-size: 15px; }
+
+    /* LIVE DEMO CONSOLE */
+    .demo-wrap { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; background: #121829; border: 1px solid #1e293b; border-radius: 28px; padding: 48px; align-items: start; }
+    
+    /* VIRTUAL SMARTPHONE */
+    .phone { background: #020617; border: 12px solid #1e293b; border-radius: 48px; padding: 24px; width: 100%; max-width: 320px; margin: 0 auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7); position: relative; }
+    .phone::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 110px; height: 18px; background: #1e293b; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; z-index: 10; }
+    .phone-screen { min-height: 380px; display: flex; flex-direction: column; justify-content: space-between; position: relative; padding: 12px 0 0; }
+    
+    .status-header { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; background: #10b981; animation: pulse 2s infinite; }
+    .status-text { font-size: 12px; font-weight: 700; color: #10b981; text-transform: uppercase; letter-spacing: 0.05em; }
+    
+    .gforce-display { text-align: center; margin: 40px 0; }
+    .gforce-num { font-size: 64px; font-weight: 900; color: #fff; letter-spacing: -0.05em; line-height: 1; }
+    .gforce-lbl { font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; margin-top: 8px; }
+    
+    .progress-bar { width: 100%; height: 8px; background: #1e293b; border-radius: 9999px; overflow: hidden; margin-top: 16px; }
+    .progress-fill { height: 100%; width: 15%; background: #10b981; transition: width 0.1s ease, background-color 0.3s ease; }
+    
+    .phone-footer { text-align: center; font-size: 12px; color: #475569; border-top: 1px solid #1e293b; padding-top: 12px; }
+
+    /* DEMO INTERACTIVE VIEWS */
+    .view-state { display: none; width: 100%; height: 100%; flex-direction: column; justify-content: space-between; }
+    .view-state.active { display: flex; }
+
+    .countdown-circle { width: 120px; height: 120px; border-radius: 50%; border: 6px solid rgba(239, 68, 68, 0.2); border-top-color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: 800; color: #ef4444; margin: 24px auto; }
+    .countdown-num { position: absolute; }
+
+    /* LOG CONSOLE */
+    .log-container { display: flex; flex-direction: column; height: 100%; }
+    .log-box { background: #020617; border: 1px solid #1e293b; border-radius: 12px; padding: 20px; font-family: 'Courier New', Courier, monospace; font-size: 13px; color: #38bdf8; height: 260px; overflow-y: auto; margin-top: 16px; box-shadow: inset 0 2px 8px rgba(0,0,0,0.8); }
+    .log-line { margin-bottom: 8px; line-height: 1.4; }
+    .log-time { color: #64748b; margin-right: 8px; }
+    .log-tag-system { color: #10b981; }
+    .log-tag-ai { color: #f59e0b; }
+    .log-tag-error { color: #ef4444; }
+
+    /* HOW IT WORKS STEPS */
+    .steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; }
+    .step-card { text-align: center; position: relative; }
+    .step-card::after { content: '→'; position: absolute; top: 24px; right: -20px; font-size: 24px; color: #334155; }
+    .step-card:last-child::after { display: none; }
+    .step-num { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #ef4444); color: #0f172a; font-size: 22px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 10px 20px -5px rgba(245, 158, 11, 0.3); }
+    .step-card h4 { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .step-card p { color: #94a3b8; font-size: 14px; }
+
+    /* BUSINESS MODEL CARDS */
+    .biz-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+    .biz-card { background: #151b30; border: 1px solid #222d4a; border-radius: 24px; padding: 40px; position: relative; overflow: hidden; }
+    .biz-card h3 { font-size: 22px; font-weight: 700; color: #f59e0b; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .biz-card p { color: #94a3b8; font-size: 15px; margin-bottom: 24px; }
+    .biz-list { list-style: none; }
+    .biz-list li { margin-bottom: 12px; font-size: 14px; color: #cbd5e1; display: flex; align-items: center; gap: 8px; }
+    .biz-list li::before { content: '✓'; color: #f59e0b; font-weight: 800; }
+
+    /* ROADMAP SECTIONS */
+    .roadmap-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+    .roadmap-card { background: #121829; border-top: 4px solid #334155; padding: 24px 16px; border-radius: 0 0 12px 12px; }
+    .roadmap-card.active { border-top-color: #f59e0b; }
+    .roadmap-phase { font-size: 13px; font-weight: 700; color: #f59e0b; text-transform: uppercase; margin-bottom: 8px; }
+    .roadmap-card h4 { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .roadmap-card p { color: #64748b; font-size: 14px; }
+
+    /* FOOTER */
+    footer { border-top: 1px solid #1e293b; padding: 60px 0; text-align: center; }
+    footer .logo { justify-content: center; margin-bottom: 16px; }
+    footer p { color: #475569; font-size: 14px; }
+
+    /* ANIMATIONS */
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.1); } }
+
+    /* RESPONSIVE DESIGN */
+    @media (max-width: 1024px) {
+      .hero h1 { font-size: 44px; }
+      .grid3, .biz-grid, .stats, .roadmap-grid { grid-template-columns: repeat(2, 1fr); }
+      .steps-grid { grid-template-columns: 1fr; gap: 40px; }
+      .step-card::after { display: none; }
+      .demo-wrap { grid-template-columns: 1fr; gap: 40px; }
+    }
+    @media (max-width: 640px) {
+      .hero h1 { font-size: 32px; }
+      .grid3, .biz-grid, .stats, .roadmap-grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="container">
+      <div class="logo"><span>♥</span> Golden Sensor</div>
+      <div class="nav-links">
+        <a href="#features">Tính năng</a>
+        <a href="#demo">Trình diễn</a>
+        <a href="#how">Vận hành</a>
+        <a href="#business">Mô hình B2B2C</a>
+      </div>
+      <button class="btn" onclick="scrollToElement('demo')">Kích hoạt Demo</button>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="container">
+      <div class="badge">🇻🇳 Giải pháp y tế số (MedTech) thế hệ mới tại Việt Nam</div>
+      <h1>Phát hiện tai nạn xe máy bằng <span>Edge AI</span><br>Bảo vệ sự sống trong Giờ Vàng</h1>
+      <p>Golden Sensor tích hợp trực tiếp vào smartphone và hệ thống xe thông minh, tự động mã hóa dữ liệu và điều phối khẩn cấp cứu hộ y tế tức thì không phụ thuộc hoàn toàn vào mạng di động.</p>
+      <div class="hero-btns">
+        <button class="btn" onclick="scrollToElement('demo')">🚨 Chạy thử nghiệm mô phỏng</button>
+        <button class="btn btn-outline" onclick="scrollToElement('business')">Tìm hiểu mô hình kinh doanh</button>
+      </div>
+      
+      <div class="stats">
+        <div class="stat-card">
+          <div class="num">&lt;3s</div>
+          <div class="lbl">Thời gian phát hiện</div>
+        </div>
+        <div class="stat-card">
+          <div class="num">99.8%</div>
+          <div class="lbl">Bộ lọc chống báo giả</div>
+        </div>
+        <div class="stat-card">
+          <div class="num">AES-256</div>
+          <div class="lbl">Mã hóa y tế đầu cuối</div>
+        </div>
+        <div class="stat-card">
+          <div class="num">Offline</div>
+          <div class="lbl">Tự động Fallback SMS</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section id="features">
+    <div class="container">
+      <div class="sec-header">
+        <h2 class="sec-title">Tính năng đột phá</h2>
+        <p class="sec-sub">Được tái cấu trúc toàn diện để giải quyết các rào cản kỹ thuật và y lý phức tạp nhất.</p>
+      </div>
+      <div class="grid3">
+        <div class="feature-card">
+          <div class="ico">🤖</div>
+          <h3>Bộ lọc thông thấp (LFP)</h3>
+          <p>Tự động loại bỏ nhiễu rung từ gờ giảm tốc, ổ gà dập dềnh hay các chấn động rơi điện thoại thông thường nhờ phân tích sóng G-force phổ rộng.</p>
+        </div>
+        <div class="feature-card">
+          <div class="ico">🛡️</div>
+          <h3>Mã hóa Zero-Knowledge</h3>
+          <p>Mã hóa cục bộ ngay trên thiết bị. Dữ liệu nhạy cảm chỉ được giải mã bằng Private Key duy nhất của bệnh viện khi phát hiện va chạm.</p>
+        </div>
+        <div class="feature-card">
+          <div class="ico">📟</div>
+          <h3>Không tốn phần cứng rời</h3>
+          <p>Ứng dụng công nghệ Edge SDK thông minh, tận dụng trực tiếp cảm biến con quay hồi chuyển trên điện thoại và dòng xe máy thế hệ mới.</p>
+        </div>
+        <div class="feature-card">
+          <div class="ico">🏥</div>
+          <h3>Hỗ trợ ra quyết định (DSS)</h3>
+          <p>Bỏ qua rào cản kiểm định khắt khe của SaMD bằng cách tối ưu hóa vai trò kết nối, nhường quyền ra phán quyết điều phối cho bác sĩ trực ban.</p>
+        </div>
+        <div class="feature-card">
+          <div class="ico">📡</div>
+          <h3>Truyền tải lai (Hybrid Link)</h3>
+          <p>Tự động nén thông tin và chuyển vùng dữ liệu sang SMS mã hóa hoặc cổng USSD băng thông thấp khi di chuyển vào vùng mất sóng 4G/5G.</p>
+        </div>
+        <div class="feature-card">
+          <div class="ico">📈</div>
+          <h3>Chương trình bảo hiểm liên kết</h3>
+          <p>Mô hình Pay-How-You-Drive kích thích người dùng kích hoạt app để đổi lại việc giảm trừ trực tiếp 20-30% chi phí bảo hiểm hàng năm.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="demo">
+    <div class="container">
+      <div class="sec-header">
+        <h2 class="sec-title">Bảng Mô phỏng Cảm biến AI</h2>
+        <p class="sec-sub">Sử dụng điện thoại di động quét mã trang này, bật cảm biến thật và lắc mạnh để đo va chấn vật lý trực tiếp.</p>
+      </div>
+      <div class="demo-wrap">
+        
+        <div class="phone">
+          <div class="phone-screen">
+            
+            <div id="state-monitoring" class="view-state active">
+              <div class="status-header">
+                <span class="status-dot" id="sensor-dot"></span>
+                <span class="status-text" id="sensor-status-text">MÔ PHỎNG GIẢ LẬP</span>
+              </div>
+              <div class="gforce-display">
+                <div class="gforce-num" id="live-g">1.0G</div>
+                <div class="gforce-lbl">Lực tác động hiện tại</div>
+                <div class="progress-bar">
+                  <div class="progress-fill" id="g-bar"></div>
+                </div>
+              </div>
+              <div class="phone-footer">
+                📍 Q. Chợ Rẫy, Quận 5 · 🏍️ 38 km/h
+              </div>
+            </div>
+
+            <div id="state-countdown" class="view-state">
+              <div class="status-header">
+                <span class="status-dot" style="background:#ef4444"></span>
+                <span class="status-text" style="color:#ef4444">Nghi vấn tai nạn</span>
+              </div>
+              <div class="countdown-circle">
+                <span class="countdown-num" id="timer-val">10</span>
+              </div>
+              <div style="text-align:center; padding: 0 10px;">
+                <p style="font-size:12px; color:#94a3b8; margin-bottom:12px;">Hệ thống phát hiện xung chấn lớn. Bạn vẫn ổn chứ?</p>
+                <button class="btn btn-outline" style="width:100%; font-size:13px; padding:10px;" onclick="cancelEmergency()">Tôi Không Sao (Hủy)</button>
+              </div>
+            </div>
+
+            <div id="state-dispatched" class="view-state">
+              <div class="status-header">
+                <span class="status-dot" style="background:#f59e0b; animation:none;"></span>
+                <span class="status-text" style="color:#f59e0b">Đang tiếp nhận cứu hộ</span>
+              </div>
+              <div style="text-align:center; margin: 30px 0;">
+                <div style="font-size:48px; margin-bottom:10px;">🚑</div>
+                <h4 style="font-size:16px; font-weight:700; color:#fff; margin-bottom:6px;">BỆNH VIỆN ĐANG ĐẾN</h4>
+                <p style="font-size:13px; color:#94a3b8;">Hệ thống đã tự động gửi định vị và hồ sơ chấn thương lâm sàng.</p>
+              </div>
+              <div class="phone-footer" style="color:#10b981; font-weight:bold;">
+                BV Chợ Rẫy xác nhận · ETA: 6 phút
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="log-container">
+          <h3 style="font-size:22px; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px;">
+            💻 Nhật ký lõi hệ thống (Edge Engine Log)
+          </h3>
+          <p style="color:#64748b; font-size:14px; margin-top:4px;">Hiển thị tiến trình lọc nhiễu, phân tích toán học và mã hóa của SDK phần mềm.</p>
+          <div class="log-box" id="log-console">
+            </div>
+          <div style="margin-top:20px; display: flex; gap: 12px; flex-wrap: wrap;">
+            <button class="btn btn-accent" id="physical-btn" onclick="requestPhysicalSensor()">📱 Bật cảm biến vật lý điện thoại</button>
+            <button class="btn" onclick="simulateCrash(6.4)">🏍️💥 Thử mô phỏng va chạm (6.4G)</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="container">
+      <div class="sec-header">
+        <h2 class="sec-title">Quy trình điều phối 4 bước</h2>
+        <p class="sec-sub">Bảo mật thông tin tối đa và hỗ trợ y tế nhanh nhất.</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h4>Thu thập & Lọc nhiễu</h4>
+          <p>Thuật toán thông thấp lọc nhiễu dao động cơ học để xác nhận xung chấn va chạm thực tế.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h4>Xác thực đệm</h4>
+          <p>Hệ thống tự động kích hoạt đếm ngược 30 giây để chắc chắn tránh báo khống gây hại tài nguyên.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h4>Mã hóa & Gửi tin</h4>
+          <p>Mã hóa AES-256 rồi nén gói tin gửi đa kênh (HTTPS/SMS) chuyển thẳng tới bệnh viện tối ưu nhất.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <h4>Bác sĩ phê duyệt</h4>
+          <p>Ekip trực tiếp nhận chấn đoán sớm từ xa, bấm nút xuất phát cứu hộ kịp thời trong thời gian vàng.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="business">
+    <div class="container">
+      <div class="sec-header">
+        <h2 class="sec-title">Mô hình liên kết B2B2C</h2>
+        <p class="sec-sub">Tạo dựng hệ sinh thái tự vận hành tài chính bền vững thay vì dựa hoàn toàn vào tài trợ.</p>
+      </div>
+      <div class="biz-grid">
+        <div class="biz-card">
+          <h3>🏥 Cơ sở Y tế / Bệnh viện</h3>
+          <p>Cung cấp giải pháp kết nối tiếp đón bệnh nhân sớm giúp tối ưu giường bệnh và phòng mổ.</p>
+          <ul class="biz-list">
+            <li>Sàng lọc bệnh án sớm</li>
+            <li>Giảm thiểu thời gian chuẩn bị</li>
+            <li>Tối ưu năng lực điều phối</li>
+          </ul>
+        </div>
+        <div class="biz-card">
+          <h3>🛡️ Công ty Bảo hiểm</h3>
+          <p>Tương thích dữ liệu hành vi để định mức phí bảo hiểm, hạn chế tối đa gian lận bồi thường.</p>
+          <ul class="biz-list">
+            <li>Tích hợp SDK chống lừa đảo</li>
+            <li>Định giá rủi ro chính xác</li>
+            <li>Giảm tỷ lệ tử vong chi trả</li>
+          </ul>
+        </div>
+        <div class="biz-card">
+          <h3>🛵 Đơn vị vận chuyển</h3>
+          <p>Quản trị rủi ro tối đa cho hàng chục ngàn nhân sự giao vận chuyên nghiệp hoạt động ngoài đường.</p>
+          <ul class="biz-list">
+            <li>Bảo vệ tài xế 24/7</li>
+            <li>Ryder Safety Dashboard</li>
+            <li>Nâng cao uy tín thương hiệu</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="roadmap" style="border-bottom:none;">
+    <div class="container">
+      <div class="sec-header">
+        <h2 class="sec-title">Lộ trình triển khai</h2>
+        <p class="sec-sub">Quy trình mở rộng quy mô một cách thực tế và an toàn y khoa.</p>
+      </div>
+      <div class="roadmap-grid">
+        <div class="roadmap-card active">
+          <div class="roadmap-phase">Giai đoạn 1</div>
+          <h4>Thử nghiệm diện hẹp</h4>
+          <p>Tập trung kết nối với 3 bệnh viện hạt nhân tại TP.HCM và phân vùng tập khách hàng tài xế công nghệ nội đô.</p>
+        </div>
+        <div class="roadmap-card">
+          <div class="roadmap-phase">Giai đoạn 2</div>
+          <h4>Đồng hóa quy mô bảo hiểm</h4>
+          <p>Tăng cường tích hợp SDK vào các cổng ứng dụng đối tác tài chính lớn nhằm tối ưu hóa chi phí vận hành ban đầu.</p>
+        </div>
+        <div class="roadmap-card">
+          <div class="roadmap-phase">Giai đoạn 3</div>
+          <h4>Bao phủ vùng phủ sóng quốc gia</h4>
+          <p>Chuyển giao và đấu nối dữ liệu trực tiếp lên cổng điều hành cấp cứu tập trung của quốc gia.</p>
+        </div>
+        <div class="roadmap-card">
+          <div class="roadmap-phase">Giai đoạn 4</div>
+          <h4>Thâm nhập khu vực lân cận</h4>
+          <p>Mở rộng dịch vụ thông qua cơ chế tối ưu hạ tầng giao thông xe máy tương đồng tại Thái Lan, Indonesia.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="logo"><span>♥</span> Golden Sensor</div>
+      <p>Hệ thống tự động phát hiện tai nạn giao thông thông minh ứng dụng mạng lưới biên.</p>
+      <p style="margin-top:12px; font-size:12px;">© 2026 Golden Sensor - Prototype Thuyết trình chuyên sâu. Đội phát triển: GOLDHEART.</p>
+    </div>
+  </footer>
+
+  <script>
+    let isPhysicalActive = false;
+    let monitoring = true;
+    let monitorInterval, countdownInterval;
+    let lastG = 1.0;
+    
+    const liveG = document.getElementById('live-g');
+    const gBar = document.getElementById('g-bar');
+    const logConsole = document.getElementById('log-console');
+    const sensorDot = document.getElementById('sensor-dot');
+    const sensorStatusText = document.getElementById('sensor-status-text');
+    const physicalBtn = document.getElementById('physical-btn');
+
+    function writeLog(tag, message) {
+      const timeStr = new Date().toLocaleTimeString();
+      let tagClass = 'log-tag-system';
+      if (tag === 'AI') tagClass = 'log-tag-ai';
+      if (tag === 'ERROR') tagClass = 'log-tag-error';
+      
+      logConsole.innerHTML += `<div class="log-line">
+        <span class="log-time">[${timeStr}]</span>
+        <span class="${tagClass}">[${tag}]</span> ${message}
+      </div>`;
+      logConsole.scrollTop = logConsole.scrollHeight;
+    }
+
+    // KHỞI CHẠY HỆ THỐNG BAN ĐẦU
+    writeLog('SYSTEM', 'Hệ thống Golden Sensor đã sẵn sàng hoạt động.');
+    writeLog('SYSTEM', 'Đang hoạt động ở chế độ mô phỏng tự động.');
+
+    // Chạy giám sát giả lập ngẫu nhiên
+    function startMonitoringLoop() {
+      monitoring = true;
+      monitorInterval = setInterval(() => {
+        if (!monitoring || isPhysicalActive) return;
+        let mockG = (0.8 + Math.random() * 0.4).toFixed(1);
+        liveG.innerHTML = `${mockG}<span style="font-size:24px;">G</span>`;
+        gBar.style.width = `${(mockG / 6.0) * 100}%`;
+        gBar.style.background = '#10b981';
+      }, 700);
+    }
+    startMonitoringLoop();
+
+    // 📱 KÍCH HOẠT CẢM BIẾN VẬT LÝ THẬT TRÊN ĐIỆN THOẠI
+    function requestPhysicalSensor() {
+      if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        // Yêu cầu cấp quyền trên hệ điều hành iOS (Safari)
+        DeviceMotionEvent.requestPermission()
+          .then(response => {
+            if (response == 'granted') {
+              enableRealSensor();
+            } else {
+              writeLog('ERROR', 'Bị từ chối quyền truy cập cảm biến vật lý trên thiết bị.');
+            }
+          })
+          .catch(err => {
+            writeLog('ERROR', 'Lỗi yêu cầu quyền cảm biến: ' + err);
+          });
+      } else {
+        // Kích hoạt luôn trên Android hoặc thiết bị hỗ trợ khác
+        enableRealSensor();
+      }
+    }
+
+    function enableRealSensor() {
+      isPhysicalActive = true;
+      monitoring = true;
+      clearInterval(monitorInterval); // Tắt chế độ giả lập ngẫu nhiên
+
+      sensorDot.style.background = '#10b981';
+      sensorStatusText.innerText = 'CẢM BIẾN VẬT LÝ ONLINE';
+      sensorStatusText.style.color = '#10b981';
+      physicalBtn.style.display = 'none';
+
+      writeLog('SYSTEM', 'KẾT NỐI THÀNH CÔNG: Đã liên kết với cảm biến chuyển động thực tế của điện thoại!');
+      writeLog('AI', 'Bắt đầu phân tích dữ liệu G-Force thực tế qua trục tọa độ 3 chiều...');
+
+      window.addEventListener('devicemotion', (event) => {
+        if (!monitoring || !isPhysicalActive) return;
+
+        // Đọc dữ liệu từ cảm biến gia tốc thực tế của điện thoại
+        let x = event.accelerationIncludingGravity.x || 0;
+        let y = event.accelerationIncludingGravity.y || 0;
+        let z = event.accelerationIncludingGravity.z || 0;
+
+        // Tính toán lực G tổng hợp
+        let rawG = Math.sqrt(x*x + y*y + z*z) / 9.80665;
+        
+        // Áp dụng bộ lọc thông thấp (LPF) để làm mượt số, tránh nhảy số ảo khi di chuyển thông thường
+        let currentG = 0.8 * lastG + 0.2 * rawG;
+        lastG = currentG;
+
+        liveG.innerHTML = `${currentG.toFixed(1)}<span style="font-size:24px;">G</span>`;
+        
+        // Điều chỉnh thanh bar đo lực hiển thị tương quan
+        let barPercentage = (currentG / 6.0) * 100;
+        gBar.style.width = `${Math.min(barPercentage, 100)}%`;
+        
+        if (currentG > 3.2) {
+          gBar.style.background = '#ef4444';
+          simulateCrash(currentG);
+        } else {
+          gBar.style.background = '#10b981';
+        }
+      });
+    }
+
+    // CHẠY THỬ MÔ PHỎNG VA CHẠM
+    function simulateCrash(gForceValue) {
+      if(!monitoring) return;
+      monitoring = false;
+      
+      // Khóa vòng lặp giả lập
+      if (!isPhysicalActive) {
+        clearInterval(monitorInterval);
+      }
+
+      const finalG = parseFloat(gForceValue).toFixed(1);
+      liveG.innerHTML = `${finalG}<span style="font-size:24px;">G</span>`;
+      gBar.style.width = '100%';
+      gBar.style.background = '#ef4444';
+
+      writeLog('SYSTEM', `CẢNH BÁO: Phát hiện xung lực đột biến lớn: ${finalG}G.`);
+      writeLog('AI', 'Lọc nhiễu thông thấp (LPF) hoàn tất -> Xác nhận đây là chấn chấn thực tế, loại trừ ổ gà.');
+      
+      setTimeout(() => {
+        switchState('state-countdown');
+        startCountdown();
+      }, 800);
+    }
+
+    function startCountdown() {
+      let secondsLeft = 10;
+      const timerVal = document.getElementById('timer-val');
+      timerVal.textContent = secondsLeft;
+      writeLog('SYSTEM', 'Kích hoạt bộ đếm ngược 10 giây khẩn cấp trên màn hình nạn nhân...');
+
+      countdownInterval = setInterval(() => {
+        secondsLeft--;
+        timerVal.textContent = secondsLeft;
+        
+        if (secondsLeft <= 0) {
+          clearInterval(countdownInterval);
+          confirmDispatch();
+        }
+      }, 1000);
+    }
+
+    function cancelEmergency() {
+      clearInterval(countdownInterval);
+      writeLog('SYSTEM', 'HỦY GIAO THỨC: Người dùng tương tác trực tiếp, báo trạng thái VẪN ỔN.');
+      writeLog('AI', 'Ghi nhận báo động giả. Hệ thống khôi phục trạng thái giám sát.');
+      resetToMonitoring();
+    }
+
+    function confirmDispatch() {
+      switchState('state-dispatched');
+      writeLog('AI', 'Không phát hiện phản hồi từ người dùng sau 10 giây. Tự động khởi động hệ thống cứu hộ.');
+      writeLog('SYSTEM', 'Tiến hành mã hóa Zero-Knowledge thông tin y tế (Nhóm máu, Liên hệ khẩn cấp) bằng chuẩn AES-256...');
+      writeLog('SYSTEM', 'DÒNG TRUYỀN TẢI LAI (HYBRID LINK): Tự động nén dữ liệu khẩn cấp và chuyển hướng gửi qua SMS/USSD dự phòng phòng trường hợp sóng 4G/5G yếu...');
+      writeLog('SYSTEM', 'Hệ thống tiếp nhận bệnh viện Chợ Rẫy phê duyệt yêu cầu. Xe cứu thương xuất phát. ETA: 6 phút.');
+      
+      setTimeout(() => {
+        resetToMonitoring();
+      }, 8000);
+    }
+
+    function resetToMonitoring() {
+      switchState('state-monitoring');
+      writeLog('SYSTEM', 'Khôi phục trạng thái giám sát an toàn thời gian thực.');
+      if (isPhysicalActive) {
+        monitoring = true;
+      } else {
+        startMonitoringLoop();
+      }
+    }
+
+    function switchState(stateId) {
+      document.querySelectorAll('.view-state').forEach(el => el.classList.remove('active'));
+      document.getElementById(stateId).classList.add('active');
+    }
+
+    function scrollToElement(id) {
+      document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>
